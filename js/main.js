@@ -255,48 +255,6 @@ var camera = new THREE.PerspectiveCamera(
 );
 
 var geometry, material;
-
-var verticesOfCube = [
-    // Front face
-    -1.0, -1.0, 1.0,
-    1.0, -1.0, 1.0,
-    0.5, 1.0, 0.5, -0.5, 1.0, 0.5,
-
-    // Back face
-    -1.0, -1.0, -1.0, -0.5, 1.0, -0.5,
-    0.5, 1.0, -0.5,
-    1.0, -1.0, -1.0,
-
-    // Top face
-    -0.0, 0.0, -0.0, -0.0, 0.0, 0.0,
-    0.0, 0.0, 0.0,
-    0.0, 0.0, -0.0,
-
-    // Bottom face
-    -0.0, -0.0, -0.0,
-    0.0, -0.0, -0.0,
-    0.0, -0.0, 0.0, -0.0, -0.0, 0.0,
-
-    // Right face
-    1.0, -1.0, -1.0,
-    0.5, 1.0, -0.5,
-    0.5, 1.0, 0.5,
-    1.0, -1.0, 1.0,
-
-    // Left face
-    -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, -0.5, 1.0, 0.5, -0.5, 1.0, -0.5
-];
-
-var indicesOfFaces = [
-    0, 1, 2, 0, 2, 3, // Front face
-    4, 5, 6, 4, 6, 7, // Back face
-    // 8, 9, 10,     8, 10, 11,  // Top face
-    // 12, 13, 14,   12, 14, 15, // Bottom face
-    16, 17, 18, 16, 18, 19, // Right face
-    20, 21, 22, 20, 22, 23 // Left face
-];
-
-
 //a cross-browser method for efficient animation, more info at:
 // http://paulirish.com/2011/requestanimationframe-for-smart-animating/
 window.requestAnimFrame = (function() {
@@ -314,7 +272,7 @@ window.requestAnimFrame = (function() {
 function initialize() {
     var geometry;
     var material;
-
+    var cube_geometry;
     geometry = new THREE.PlaneGeometry(width, height);
 
     material = new THREE.MeshLambertMaterial({
@@ -332,15 +290,20 @@ function initialize() {
 
     var wallWidth = 1;
     var wallHeight = 1;
+    var wallDepth = 0.1;
 
     for (var i = 0; i < height; i++) {
         for (var j = 0; j < width; j++) {
-            geometry = new THREE.PlaneGeometry(wallWidth, wallHeight);
+
+            geometry = new THREE.BoxGeometry( wallWidth, wallHeight, wallDepth );
 
             material = new THREE.MeshLambertMaterial({
                 color: 0xff0000,
                 side: THREE.DoubleSide
             });
+
+            
+
             var cerca_vertical = new THREE.Mesh(geometry, material);
             color = (Math.random() * 100000000) % 16777215;
             material = new THREE.MeshLambertMaterial({
@@ -420,8 +383,8 @@ function initialize() {
     viewport = document.getElementById('viewport');
     viewport.appendChild(renderer.domElement);
 
-    camera.position.set(-17, 8, 20);
-    camera.rotation.y -= Math.PI / 3;
+    camera.rotation.x -= Math.PI / 2;
+    camera.position.set(height / 2,15,width / 2);
 
     //attaches fly controls to the camera
     controls = new THREE.FlyControls(camera);
