@@ -1,7 +1,7 @@
 function makeSet(x) {
     x.rank = 0;
     //used to know whether the cell is the only without down passage
-    x.hasDownPassage = false;
+    x.downPassages = 0;
     x.rightWall = true;
     x.downWall = true;
     x.parent = x;
