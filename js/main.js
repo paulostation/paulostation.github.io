@@ -60,20 +60,20 @@ function createRightWalls(array) {
 function createDownWalls(array) {
     let i, r, frontier = false;
 
-    for (i = 0; i < array.length; i++) {        
+    for (i = 0; i < array.length; i++) {
         //If only member of the set do not create a down wall
         if (find(array[i]).rank === 0) {
-            console.log("Only member of the set, didn't create a downWall at " + i);            
+            console.log("Only member of the set, didn't create a downWall at " + i);
             array[i].downWall = false;
             continue;
         }
 
-        if(i == (array.length - 1)) {
+        if (i == (array.length - 1)) {
             frontier = true;
-        } else if (find(array[i]) !== find(array[i + 1])){
+        } else if (find(array[i]) !== find(array[i + 1])) {
             frontier = true;
         }
-        console.log("Down passages "+ i + ": " + find(array[i]).downPassages);
+        console.log("Down passages " + i + ": " + find(array[i]).downPassages);
         if (frontier && find(array[i]).downPassages === 0) {
             console.log("Last closed cell in set, didn't create a downWall at " + i);
             array[i].downWall = false;
@@ -158,9 +158,9 @@ function printRow(row, index) {
         } else if (!row[i].downWall && row[i].rightWall) {
             console.log("Only right wall on " + i);
             map[index].push(2);
-        } else if (row[i].downWall && row[i].rightWall) { 
+        } else if (row[i].downWall && row[i].rightWall) {
             console.log("Both walls on " + i);
-            map[index].push(3); 
+            map[index].push(3);
         } else {
             console.log("buguei");
         }
@@ -219,54 +219,99 @@ while (i < height) {
     i++;
 }
 
-// printMaze(map);
+//----Variables----//
+//DOM element to attach the renderer to
+var viewport;
 
-setTimeout(renderMaze, 500);
-for (var i = 0; i < map.length; i++)
-    console.log(map[i]);
+//built-in three.js controls will be attached to this
+var controls;
 
-function renderMaze() {
+//viewport size
+var viewportWidth = 1024;
+var viewportHeight = 768;
+
+//camera attributes
+var camera_view_angle = 45,
+    aspect = viewportWidth / viewportHeight,
+    near = 0.1, //near clip-plane
+    far = 10000; //far clip-plane
+
+//sphere specifications
+var radius = 50,
+    segments = 32,
+    rings = 32;
+
+//----Constructors----//
+var renderer = new THREE.WebGLRenderer({
+    antialias: true
+});
+var scene = new THREE.Scene();
+
+var camera = new THREE.PerspectiveCamera(
+    camera_view_angle,
+    aspect,
+    near,
+    far
+);
+
+var geometry, material;
+
+var verticesOfCube = [
+    // Front face
+    -1.0, -1.0, 1.0,
+    1.0, -1.0, 1.0,
+    0.5, 1.0, 0.5, -0.5, 1.0, 0.5,
+
+    // Back face
+    -1.0, -1.0, -1.0, -0.5, 1.0, -0.5,
+    0.5, 1.0, -0.5,
+    1.0, -1.0, -1.0,
+
+    // Top face
+    -0.0, 0.0, -0.0, -0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0,
+    0.0, 0.0, -0.0,
+
+    // Bottom face
+    -0.0, -0.0, -0.0,
+    0.0, -0.0, -0.0,
+    0.0, -0.0, 0.0, -0.0, -0.0, 0.0,
+
+    // Right face
+    1.0, -1.0, -1.0,
+    0.5, 1.0, -0.5,
+    0.5, 1.0, 0.5,
+    1.0, -1.0, 1.0,
+
+    // Left face
+    -1.0, -1.0, -1.0, -1.0, -1.0, 1.0, -0.5, 1.0, 0.5, -0.5, 1.0, -0.5
+];
+
+var indicesOfFaces = [
+    0, 1, 2, 0, 2, 3, // Front face
+    4, 5, 6, 4, 6, 7, // Back face
+    // 8, 9, 10,     8, 10, 11,  // Top face
+    // 12, 13, 14,   12, 14, 15, // Bottom face
+    16, 17, 18, 16, 18, 19, // Right face
+    20, 21, 22, 20, 22, 23 // Left face
+];
 
 
-    function addLights() {
-        var dirLight = new THREE.DirectionalLight(0xffffff, 1);
-        dirLight.position.set(100, 100, 50);
-        scene.add(dirLight);
-        var ambLight = new THREE.AmbientLight(0x404040);
-        scene.add(ambLight);
-    }
+//a cross-browser method for efficient animation, more info at:
+// http://paulirish.com/2011/requestanimationframe-for-smart-animating/
+window.requestAnimFrame = (function() {
+    return window.requestAnimationFrame ||
+        window.webkitRequestAnimationFrame ||
+        window.mozRequestAnimationFrame ||
+        window.oRequestAnimationFrame ||
+        window.msRequestAnimationFrame ||
+        function(callback) {
+            window.setTimeout(callback, 1000 / 60);
+        };
+})();
 
-    var render = function() {
-        requestAnimationFrame(render);
-
-        // camera.rotation.x += 0.01;
-        renderer.render(scene, camera);
-    };
-
-    var scene = new THREE.Scene();
-    var camera = new THREE.PerspectiveCamera( 45, width / height, 1, 1000 );
-    scene.add( camera );
-
-    // camera.rotation.set(0, 0, 0);
-    camera.rotation.x -= Math.PI / 2;
-    camera.position.x = height / 2;
-    camera.position.y = 15;
-    camera.position.z = width / 2;
-
-    var renderer = new THREE.WebGLRenderer();
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    // Add lights
-    // addLights();
-
-    // controls = new THREE.OrbitControls(camera, renderer.domElement);
-    //controls.addEventListener( 'change', render ); // add this only if there is no animation loop (requestAnimationFrame)
-    // controls.enableDamping = true;
-    // controls.dampingFactor = 0.25;
-    // controls.enableZoom = false;
-
-
+//----Initialization----//
+function initialize() {
     var geometry;
     var material;
 
@@ -283,8 +328,7 @@ function renderMaze() {
     piso.position.x += width / 2;
     piso.position.x -= 0.5;
     piso.position.z += height / 2;
-    scene.add(piso);
-    render();
+    scene.add(piso);    
 
     var wallWidth = 1;
     var wallHeight = 1;
@@ -336,8 +380,6 @@ function renderMaze() {
             muro_vertical.position.z = (wallWidth * i) + (wallHeight / 2);
             muro_vertical.position.x = (wallWidth * j) + (wallHeight / 2);
 
-            
-
             console.log("i: " + i + " j: " + j + " value: " + map[i][j]);
             if (map[i][j] === 0) {
                 console.log("rendering nofen");
@@ -347,11 +389,11 @@ function renderMaze() {
             } else if (map[i][j] == 2) {
                 scene.add(muro_vertical);
                 console.log("rendering rightWall");
-            } else if(i != (height - 1)) {
+            } else if (i != (height - 1)) {
                 scene.add(muro_vertical);
                 scene.add(muro_horizontal);
                 console.log("rendering both walls");
-            } else {console.log("buguei");}
+            } else { console.log("buguei"); }
 
             if (i === 0) {
                 scene.add(cerca_horizontal);
@@ -371,6 +413,56 @@ function renderMaze() {
 
     var light = new THREE.AmbientLight(0xA0A0A0); // soft white light
     scene.add(light);
-    render();
 
+    //Sets up the renderer to the same size as a DOM element
+    //and attaches it to that element
+    renderer.setSize(viewportWidth, viewportHeight);
+    viewport = document.getElementById('viewport');
+    viewport.appendChild(renderer.domElement);
+
+    camera.position.set(-17, 8, 20);
+    camera.rotation.y -= Math.PI / 3;
+
+    //attaches fly controls to the camera
+    controls = new THREE.FlyControls(camera);
+    //camera control properties
+    controls.movementSpeed = 0.5;
+    controls.domElement = viewport;
+    controls.rollSpeed = 0.01;
+    controls.autoForward = false;
+    controls.dragToLook = true;
+
+
+    // call update
+    update();
+}
+
+
+
+//----Update----//
+function update() {
+    //requests the browser to call update at it's own pace
+    requestAnimFrame(update);
+
+    //update controls
+    controls.update(1);
+    document.getElementById('viewport');
+    document.getElementById("camera_stuff").innerHTML = "position=" +
+        camera.position.x + "," +
+        camera.position.y + "," +
+        camera.position.z + "<br>" +
+        "rotation=" +
+        camera.rotation.x + "," +
+        camera.rotation.y + "," +
+        camera.rotation.z + "\n";
+
+    //call draw
+    draw();
+}
+
+
+
+//----Draw----//
+function draw() {
+    renderer.render(scene, camera);
 }
