@@ -1,3 +1,4 @@
+/*jshint esversion: 6 */
 //----Constructors----//
 var renderer = new THREE.WebGLRenderer({
     antialias: true
@@ -162,7 +163,7 @@ function initialize(bitmap) {
                 scene.add(verticalWall);
                 //and last column
             } else if (j == (width - 1)) {
-              //if it is 0,0 don't create a wall, it's the maze entrance
+                //if it is 0,0 don't create a wall, it's the maze entrance
                 if (i === height - 1) {
                     continue;
                 }
@@ -188,7 +189,7 @@ function initialize(bitmap) {
     //attaches fly controls to the camera
     controls = new THREE.FlyControls(camera);
     //camera control properties
-    controls.movementSpeed = 0.5;
+    controls.movementSpeed = 0.1;
     controls.domElement = viewport;
     controls.rollSpeed = 0.01;
     controls.autoForward = false;
@@ -222,4 +223,76 @@ function update() {
 //----Draw----//
 function draw() {
     renderer.render(scene, camera);
+}
+
+function renderSolution(solution) {
+    var wallWidth = 0.1;
+    var wallHeight = 0.1;
+    var wallDepth = 1;
+
+    var color = 0x00ff00;
+    var geometry = new THREE.BoxGeometry(wallWidth, wallHeight, wallDepth);
+    var material = new THREE.MeshLambertMaterial({
+        color: color,
+        side: THREE.DoubleSide
+    });
+
+    var first = new THREE.Mesh(geometry, material);
+    //if path is going downward
+    if (solution[0].x > 0) {
+        first.position.z += 1;
+    } else {
+        first.rotation.y = Math.PI / 2;
+        first.position.z += 0.5;
+        first.position.x += 0.5;
+    }
+
+    scene.add(first);
+
+    for (let i = 0; i < solution.length; i++) {
+
+        if (i == solution.length - 1) {
+            wallDepth = 0.5;
+        }
+
+        color = 0x00ff00;
+        geometry = new THREE.BoxGeometry(wallWidth, wallHeight, wallDepth);
+        material = new THREE.MeshLambertMaterial({
+            color: color,
+            side: THREE.DoubleSide
+        });
+
+        var path = new THREE.Mesh(geometry, material);
+
+
+
+        path.position.x = solution[i].pos.y;
+        path.position.z = solution[i].pos.x;
+        path.position.z += 0.5;
+
+        if (solution[i + 1] && solution[i + 1].y > solution[i].y) {
+            path.rotation.y += Math.PI / 2;
+            path.position.x += 0.5;
+        }
+        //if path is going upward
+        if (solution[i + 1] && solution[i + 1].x < solution[i].x) {
+            // path.rotation.y += Math.PI / 2;
+            path.position.z -= 0.5;
+        }
+        //if path is going downward
+        if (solution[i + 1] && solution[i + 1].x > solution[i].x) {
+            // path.rotation.y += Math.PI / 2;
+            path.position.z += 0.5;
+        }
+        //if path is going to the left
+        if (solution[i + 1] && solution[i + 1].y < solution[i].y) {
+            path.rotation.y += Math.PI / 2;
+            path.position.x -= 0.5;
+        }
+        if (i == solution.length - 1) {
+            path.rotation.y += Math.PI / 2;
+            path.position.x += 0.25;
+        }
+        scene.add(path);
+    }
 }
